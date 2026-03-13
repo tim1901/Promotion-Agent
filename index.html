@@ -923,7 +923,9 @@ Build my complete promotion strategy.`;
       updateUsageBadge(data._usage);
 
       const raw = data.content?.[0]?.text || '';
-      const jsonMatch = raw.match(/\{[\s\S]*\}/);
+      // Strip markdown code fences if present, then extract JSON
+      const cleaned = raw.replace(/```json|```/g, '').trim();
+      const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
       if (!jsonMatch) throw new Error('Could not parse strategy');
       const strategy = JSON.parse(jsonMatch[0]);
 
