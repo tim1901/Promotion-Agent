@@ -82,7 +82,7 @@ export default async (req) => {
       },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
-        max_tokens: 1200,
+        max_tokens: 3000,
         system: systemPrompt,
         messages
       })
