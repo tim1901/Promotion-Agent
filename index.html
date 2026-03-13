@@ -914,6 +914,15 @@ Build my complete promotion strategy.`;
       clearInterval(msgInterval);
       const data = await response.json();
 
+      // DEBUG - open browser console (F12) to see these logs
+      console.log('HTTP status:', response.status);
+      console.log('Full API response:', JSON.stringify(data, null, 2));
+
+      // Handle Anthropic API-level errors (bad key, quota exceeded, etc.)
+      if (data.error && data.error !== 'rate_limit') {
+        throw new Error('API error: ' + (data.error.message || JSON.stringify(data.error)));
+      }
+
       // Handle rate limit
       if (response.status === 429 || data.error === 'rate_limit') {
         showRateLimit(data.message || 'You\'ve reached your daily limit. Come back tomorrow!');
@@ -923,10 +932,12 @@ Build my complete promotion strategy.`;
       updateUsageBadge(data._usage);
 
       const raw = data.content?.[0]?.text || '';
+      console.log('Raw Claude text:', raw.slice(0, 500));
+
       // Strip markdown code fences if present, then extract JSON
       const cleaned = raw.replace(/```json|```/g, '').trim();
       const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) throw new Error('Could not parse strategy');
+      if (!jsonMatch) throw new Error('No JSON found in response. First 300 chars: ' + raw.slice(0, 300));
       const strategy = JSON.parse(jsonMatch[0]);
 
       conversationHistory.push({ role: 'assistant', content: raw });
